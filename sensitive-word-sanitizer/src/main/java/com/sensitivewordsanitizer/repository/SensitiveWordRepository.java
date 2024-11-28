@@ -1,80 +1,63 @@
 package com.sensitivewordsanitizer.repository;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sensitivewordsanitizer.model.SensitiveWord;
 import org.springframework.stereotype.Repository;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 @Repository
 public class SensitiveWordRepository {
-    private static final String WORDS_FILE_PATH = "sensitive_words.json";
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final ReentrantLock lock = new ReentrantLock();
+    private static final String FILE_PATH = "sensitive_words.txt";
 
-    private List<SensitiveWord> readWords() {
+    public List<String> getAllWords() {
         try {
-            File file = new File(WORDS_FILE_PATH);
+            File file = new File(FILE_PATH);
             if (!file.exists()) {
+                file.createNewFile();
                 return new ArrayList<>();
             }
-            return objectMapper.readValue(file, objectMapper.getTypeFactory()
-                .constructCollectionType(List.class, SensitiveWord.class));
+
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                return reader.lines()
+                    .filter(line -> !line.trim().isEmpty())
+                    .collect(Collectors.toList());
+            }
         } catch (IOException e) {
-            return new ArrayList<>();
+            throw new RuntimeException("Error reading sensitive words", e);
         }
     }
 
-    private void writeWords(List<SensitiveWord> words) {
+    public void addWord(String word) {
         try {
-            lock.lock();
-            objectMapper.writeValue(new File(WORDS_FILE_PATH), words);
+            // Check if word already exists
+            List<String> existingWords = getAllWords();
+            if (existingWords.stream().noneMatch(w -> w.equalsIgnoreCase(word))) {
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH, true))) {
+                    writer.write(word);
+                    writer.newLine();
+                }
+            }
         } catch (IOException e) {
-            throw new RuntimeException("Failed to write sensitive words", e);
-        } finally {
-            lock.unlock();
+            throw new RuntimeException("Error adding sensitive word", e);
         }
     }
 
-    public List<SensitiveWord> findAll() {
-        return readWords();
-    }
+    public void deleteWord(String wordToDelete) {
+        try {
+            List<String> words = getAllWords().stream()
+                .filter(word -> !word.equalsIgnoreCase(wordToDelete))
+                .collect(Collectors.toList());
 
-    public SensitiveWord save(SensitiveWord word) {
-        List<SensitiveWord> words = readWords();
-        
-        // If word exists, update it
-        words = words.stream()
-            .filter(w -> !w.getWord().equalsIgnoreCase(word.getWord()))
-            .collect(Collectors.toList());
-        
-        // Assign ID - use max existing ID + 1
-        long maxId = words.stream()
-            .mapToLong(SensitiveWord::getId)
-            .max()
-            .orElse(0L);
-        word.setId(maxId + 1);
-        
-        words.add(word);
-        writeWords(words);
-        return word;
-    }
-
-    public void deleteById(Long id) {
-        List<SensitiveWord> words = readWords();
-        words.removeIf(w -> w.getId().equals(id));
-        writeWords(words);
-    }
-
-    public SensitiveWord findById(Long id) {
-        return readWords().stream()
-            .filter(w -> w.getId().equals(id))
-            .findFirst()
-            .orElse(null);
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH))) {
+                for (String word : words) {
+                    writer.write(word);
+                    writer.newLine();
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error deleting sensitive word", e);
+        }
     }
 }

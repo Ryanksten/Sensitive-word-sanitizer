@@ -1,12 +1,10 @@
 package com.sensitivewordsanitizer.service;
 
-import com.sensitivewordsanitizer.model.SensitiveWord;
 import com.sensitivewordsanitizer.repository.SensitiveWordRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class SensitiveWordService {
@@ -22,11 +20,10 @@ public class SensitiveWordService {
             return text;
         }
 
-        List<SensitiveWord> sensitiveWords = repository.findAll();
+        List<String> sensitiveWords = repository.getAllWords();
         String sanitizedText = text;
 
-        for (SensitiveWord sensitiveWord : sensitiveWords) {
-            String word = sensitiveWord.getWord();
+        for (String word : sensitiveWords) {
             // Case-insensitive replacement
             sanitizedText = sanitizedText.replaceAll("(?i)" + word, "*".repeat(word.length()));
         }
@@ -34,28 +31,15 @@ public class SensitiveWordService {
         return sanitizedText;
     }
 
-    public SensitiveWord addSensitiveWord(String word) {
-        SensitiveWord sensitiveWord = new SensitiveWord(word.trim());
-        return repository.save(sensitiveWord);
+    public void addSensitiveWord(String word) {
+        repository.addWord(word.trim());
     }
 
     public List<String> getAllSensitiveWords() {
-        return repository.findAll().stream()
-                .map(SensitiveWord::getWord)
-                .collect(Collectors.toList());
+        return repository.getAllWords();
     }
 
-    public void deleteSensitiveWord(Long id) {
-        repository.deleteById(id);
-    }
-
-    public SensitiveWord updateSensitiveWord(Long id, String newWord) {
-        SensitiveWord existingWord = repository.findById(id);
-        if (existingWord == null) {
-            throw new RuntimeException("Sensitive word not found");
-        }
-        
-        existingWord.setWord(newWord.trim());
-        return repository.save(existingWord);
+    public void deleteSensitiveWord(String word) {
+        repository.deleteWord(word);
     }
 }

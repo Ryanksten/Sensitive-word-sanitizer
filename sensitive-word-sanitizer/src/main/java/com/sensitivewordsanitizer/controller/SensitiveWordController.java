@@ -1,7 +1,5 @@
 package com.sensitivewordsanitizer.controller;
 
-
-import com.sensitivewordsanitizer.model.SensitiveWord;
 import com.sensitivewordsanitizer.service.SensitiveWordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +9,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/sensitive-words")
-@CrossOrigin(origins = "http://localhost:3000") 
+@CrossOrigin(origins = "http://localhost:3000")
 public class SensitiveWordController {
     private final SensitiveWordService service;
 
@@ -26,8 +24,9 @@ public class SensitiveWordController {
     }
 
     @PostMapping
-    public ResponseEntity<SensitiveWord> addSensitiveWord(@RequestBody String word) {
-        return ResponseEntity.ok(service.addSensitiveWord(word));
+    public ResponseEntity<Void> addSensitiveWord(@RequestBody String word) {
+        service.addSensitiveWord(word);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping
@@ -35,17 +34,9 @@ public class SensitiveWordController {
         return ResponseEntity.ok(service.getAllSensitiveWords());
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSensitiveWord(@PathVariable Long id) {
-        service.deleteSensitiveWord(id);
+    @DeleteMapping("/{word}")
+    public ResponseEntity<Void> deleteSensitiveWord(@PathVariable String word) {
+        service.deleteSensitiveWord(word);
         return ResponseEntity.ok().build();
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<SensitiveWord> updateSensitiveWord(
-            @PathVariable Long id, 
-            @RequestBody String newWord
-    ) {
-        return ResponseEntity.ok(service.updateSensitiveWord(id, newWord));
     }
 }

@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "SensitiveWordSanitizerApplication",
+            "request": "launch",
+            "mainClass": "com.sensitivewordsanitizer.SensitiveWordSanitizerApplication",
+            "projectName": ""
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-SensitiveWordSanitizerApplication<sensitive-word-sanitizer>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.sensitivewordsanitizer.SensitiveWordSanitizerApplication",
+            "projectName": "sensitive-word-sanitizer",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

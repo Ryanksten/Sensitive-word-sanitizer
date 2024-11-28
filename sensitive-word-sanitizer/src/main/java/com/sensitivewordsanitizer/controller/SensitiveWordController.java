@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/sensitive-words")
-@CrossOrigin(origins = "http://localhost:3000") // Allow frontend to access
+@CrossOrigin(origins = "http://localhost:3000") 
 public class SensitiveWordController {
     private final SensitiveWordService service;
 
